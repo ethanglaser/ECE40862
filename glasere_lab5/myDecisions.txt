@@ -1,0 +1,24 @@
+MPU Class:
+I implemented the MPU class from Piazza first, due to the lack of functionality of the library/class we were supposed to use for this lab.
+The class works relatively well, although there are some noticeable flaws that I attempted to compensate for in the lab - not sure how the class and functionality compares to what we were supposed to have
+An additional modification I made to the class is removing the temperature conversion to Fahrenheit since Celsius is what is required for the lab
+
+Velocity change in time metric/button 2 handler period:
+I initially set this to a much higher frequency but this made it hard to debug since values were being printed so rapidly.
+In order to debug more effectively I lowered the frequency and set the interrupt period to 500 ms in order to consistently measure the velocity, since an accurate value of delta t is needed.
+The lower frequency did not impact the system's performance, so I kept it at 2 Hz, 500 ms period.
+
+Calibration procedure:
+In order to calibrate the MPU I determined acceleration offsets.
+In order to account for any outlying cases or specific errors I took 10 samples, each spaced 0.01 seconds apart to get a reliable average offset for the x, y, and z directions.
+These offsets were used with new readings in order to normalize the values when new accelerations were read and the corresponding velocity was calculated.
+Gyro values were also reset so that when calibration occurs, that orientation is the new default and angles are calculated relative to that plane
+
+Spinner Demo logic:
+Various stages of testing and experimentation led to some design choices.
+I initially set velocities to zero and then calculated the velocity in each direction at each iteration of the interrupt, using v1 = v0 + dt * a, where v0 is the previous velocity, dt is the period (0.5 s) and a is the acceleration in that direction
+However, this led to accumulation over time of the velocity values, so I modified the celocity calculations to not be based on the previous velocity, which doesn't make sense mathematically but in practice it seemed to produce much more reasonable outcomes
+Additionally, I factored the acceleration offsets calculated in the calibration step, subtracting the offsets from the measured values to normalize them before using them in velocity calculations
+Logic for the yellow light was implemented as indicated, logic for the red light was determined based on experimentation - a threshold of 5 was set in the x, y and positive z directions, any higher velocities would trigger the red light
+Logic for the green light was done using thresholds instead of exact 0 values, as these were difficult to yield exactly. Instead a threshold of |velocity| < 0.2 was used, which led to better output when the spinner wasn't moving. However the orientation of the spinner also has to be right (match the orientation of last calibration) for the green light to turn on.
+
